@@ -267,6 +267,39 @@ h2 {
   padding: 48px 56px;
 }
 
+.setup-mode-selector {
+  display: inline-grid;
+  grid-template-columns: repeat(2, minmax(110px, 1fr));
+  align-self: flex-start;
+  margin-bottom: 30px;
+  padding: 4px;
+  border: 1px solid var(--line);
+  border-radius: 7px;
+  background: var(--surface-soft);
+}
+
+.setup-mode-selector button {
+  min-height: 38px;
+  padding: 0 16px;
+  border: 0;
+  border-radius: 5px;
+  background: transparent;
+  color: var(--muted);
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.setup-mode-selector button[aria-pressed="true"] {
+  background: var(--surface);
+  color: var(--accent-dark);
+  box-shadow: 0 2px 8px rgba(31, 47, 42, 0.09);
+}
+
+.setup-mode-content {
+  min-width: 0;
+}
+
 .setup-primary h1 {
   margin-bottom: 30px;
   font-size: 30px;
@@ -315,6 +348,53 @@ h2 {
 .start-button {
   align-self: flex-start;
   min-width: 170px;
+}
+
+.chapter-selector {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 9px;
+  margin-bottom: 24px;
+}
+
+.chapter-selector button {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 12px;
+  min-height: 58px;
+  padding: 10px 13px;
+  border: 1px solid var(--line-strong);
+  border-radius: 6px;
+  background: var(--surface);
+  cursor: pointer;
+  text-align: left;
+}
+
+.chapter-selector button:hover {
+  border-color: var(--accent);
+  background: #f8fcfa;
+}
+
+.chapter-selector button[aria-checked="true"] {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+  color: var(--accent-dark);
+  box-shadow: inset 0 0 0 1px var(--accent);
+}
+
+.chapter-selector span {
+  min-width: 0;
+  overflow-wrap: anywhere;
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1.45;
+}
+
+.chapter-selector small {
+  color: var(--muted);
+  font-size: 11px;
+  white-space: nowrap;
 }
 
 .bank-summary {
@@ -395,6 +475,12 @@ h2 {
 
 .history-row strong {
   color: var(--ink);
+}
+
+.history-row > strong:first-child {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .empty-state {
@@ -1106,6 +1192,11 @@ h2 {
     font-size: 24px;
   }
 
+  .setup-mode-selector {
+    width: 100%;
+    margin-bottom: 24px;
+  }
+
   .count-selector {
     grid-template-columns: repeat(3, minmax(0, 1fr));
   }
@@ -1121,6 +1212,10 @@ h2 {
 
   .start-button {
     width: 100%;
+  }
+
+  .chapter-selector {
+    grid-template-columns: 1fr;
   }
 
   .bank-summary div {

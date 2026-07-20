@@ -33,14 +33,28 @@
       <section class="view setup-view" id="setup-view">
         <div class="setup-layout">
           <div class="setup-primary">
-            <p class="eyebrow">随机组卷</p>
-            <h1>选择本次题量</h1>
-            <div class="count-selector" id="count-selector" role="group" aria-label="题量">
-              <button type="button" data-count="20" aria-pressed="true"><strong>20</strong><span>题</span></button>
-              <button type="button" data-count="50" aria-pressed="false"><strong>50</strong><span>题</span></button>
-              <button type="button" data-count="100" aria-pressed="false"><strong>100</strong><span>题</span></button>
+            <div class="setup-mode-selector" id="setup-mode-selector" role="group" aria-label="练习模式">
+              <button type="button" data-mode="random" aria-pressed="true">随机组卷</button>
+              <button type="button" data-mode="chapter" aria-pressed="false">章节自测</button>
             </div>
-            <button class="button button-primary start-button" id="start-button" type="button">开始 20 题</button>
+
+            <div class="setup-mode-content" id="random-setup-controls">
+              <p class="eyebrow">随机组卷</p>
+              <h1>选择本次题量</h1>
+              <div class="count-selector" id="count-selector" role="group" aria-label="题量">
+                <button type="button" data-count="20" aria-pressed="true"><strong>20</strong><span>题</span></button>
+                <button type="button" data-count="50" aria-pressed="false"><strong>50</strong><span>题</span></button>
+                <button type="button" data-count="100" aria-pressed="false"><strong>100</strong><span>题</span></button>
+              </div>
+              <button class="button button-primary start-button" id="start-button" type="button">开始 20 题</button>
+            </div>
+
+            <div class="setup-mode-content" id="chapter-setup-controls" hidden>
+              <p class="eyebrow">按章练习</p>
+              <h1>选择自测章节</h1>
+              <div class="chapter-selector" id="chapter-selector" role="radiogroup" aria-label="章节"></div>
+              <button class="button button-primary start-button" id="chapter-start-button" type="button">开始章节自测</button>
+            </div>
           </div>
 
           <aside class="bank-summary" aria-label="题库概况">

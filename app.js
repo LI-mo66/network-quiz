@@ -18,8 +18,13 @@
     wrongBookNav: byId("wrong-book-nav"),
     wrongBookCount: byId("wrong-book-count"),
     newPaperButton: byId("new-paper-button"),
+    setupModeSelector: byId("setup-mode-selector"),
+    randomSetupControls: byId("random-setup-controls"),
+    chapterSetupControls: byId("chapter-setup-controls"),
     countSelector: byId("count-selector"),
     startButton: byId("start-button"),
+    chapterSelector: byId("chapter-selector"),
+    chapterStartButton: byId("chapter-start-button"),
     totalCount: byId("total-count"),
     singleCount: byId("single-count"),
     judgmentCount: byId("judgment-count"),
@@ -67,6 +72,8 @@
   };
 
   let selectedCount = 20;
+  let setupMode = "random";
+  let selectedChapterIndex = 0;
   let session = null;
   let pendingConfirmation = null;
   let saved = loadSavedData();
@@ -139,6 +146,7 @@
     refs.singleCount.textContent = String(bank.filter((question) => question.type === "single").length);
     refs.judgmentCount.textContent = String(bank.filter((question) => question.type === "judgment").length);
     refs.imageCount.textContent = String(meta.imageCount || 0);
+    renderChapterSelector();
     refs.historyList.replaceChildren();
 
     if (!saved.history.length) {
@@ -151,7 +159,13 @@
       row.className = "history-row";
 
       const mode = document.createElement("strong");
-      mode.textContent = record.mode === "wrong" ? "错题重练" : `随机 ${record.total} 题`;
+      if (record.mode === "wrong") {
+        mode.textContent = "错题重练";
+      } else if (record.mode === "chapter") {
+        mode.textContent = record.label || "章节自测";
+      } else {
+        mode.textContent = `随机 ${record.total} 题`;
+      }
       const score = document.createElement("span");
       score.textContent = `${record.correct} / ${record.total}`;
       const percent = document.createElement("strong");
@@ -170,6 +184,54 @@
     });
   }
 
+  function availableChapters() {
+    return Array.isArray(meta.chapters) && meta.chapters.length
+      ? meta.chapters
+      : [...new Set(bank.map((question) => question.chapter))];
+  }
+
+  function selectSetupMode(mode) {
+    setupMode = mode;
+    refs.setupModeSelector.querySelectorAll("button[data-mode]").forEach((button) => {
+      button.setAttribute("aria-pressed", String(button.dataset.mode === mode));
+    });
+    refs.randomSetupControls.hidden = mode !== "random";
+    refs.chapterSetupControls.hidden = mode !== "chapter";
+  }
+
+  function selectChapter(index) {
+    const chapters = availableChapters();
+    selectedChapterIndex = Math.max(0, Math.min(index, chapters.length - 1));
+    refs.chapterSelector.querySelectorAll("button[data-chapter-index]").forEach((button) => {
+      button.setAttribute(
+        "aria-checked",
+        String(Number(button.dataset.chapterIndex) === selectedChapterIndex),
+      );
+    });
+  }
+
+  function renderChapterSelector() {
+    const chapters = availableChapters();
+    if (selectedChapterIndex >= chapters.length) selectedChapterIndex = 0;
+    refs.chapterSelector.replaceChildren();
+
+    chapters.forEach((chapter, index) => {
+      const count = bank.filter((question) => question.chapter === chapter).length;
+      const button = document.createElement("button");
+      button.type = "button";
+      button.dataset.chapterIndex = String(index);
+      button.setAttribute("role", "radio");
+      button.setAttribute("aria-checked", String(index === selectedChapterIndex));
+
+      const name = document.createElement("span");
+      name.textContent = chapter;
+      const total = document.createElement("small");
+      total.textContent = `${count} 题`;
+      button.append(name, total);
+      refs.chapterSelector.append(button);
+    });
+  }
+
   function selectCount(count) {
     selectedCount = count;
     refs.countSelector.querySelectorAll("button[data-count]").forEach((button) => {
@@ -183,15 +245,23 @@
     startSession(questions, "random");
   }
 
+  function startChapterSession() {
+    const chapter = availableChapters()[selectedChapterIndex];
+    const questions = bank.filter((question) => question.chapter === chapter);
+    if (!questions.length) return;
+    startSession(shuffled(questions), "chapter", chapter);
+  }
+
   function startWrongSession(questions) {
     if (!questions.length) return;
     startSession(shuffled(questions), "wrong");
   }
 
-  function startSession(questions, mode) {
+  function startSession(questions, mode, label = "") {
     session = {
       questions,
       mode,
+      label,
       currentIndex: 0,
       answers: new Map(),
       completed: false,
@@ -376,6 +446,7 @@
         total: session.questions.length,
         correct: stats.correct,
         mode: session.mode,
+        label: session.label,
       });
       saved.history = saved.history.slice(0, 8);
       saveData();
@@ -391,7 +462,11 @@
       (question) => !session.answers.get(question.id)?.correct,
     );
 
-    refs.resultTitle.textContent = session.mode === "wrong" ? "错题重练完成" : "练习完成";
+    refs.resultTitle.textContent = session.mode === "wrong"
+      ? "错题重练完成"
+      : session.mode === "chapter"
+        ? "章节自测完成"
+        : "练习完成";
     refs.resultPercent.textContent = `${Math.round((stats.correct / total) * 100)}%`;
     refs.resultFraction.textContent = `${stats.correct} / ${total}`;
     refs.resultCorrect.textContent = String(stats.correct);
@@ -533,11 +608,20 @@
     });
   }
 
+  refs.setupModeSelector.addEventListener("click", (event) => {
+    const button = event.target.closest("button[data-mode]");
+    if (button) selectSetupMode(button.dataset.mode);
+  });
   refs.countSelector.addEventListener("click", (event) => {
     const button = event.target.closest("button[data-count]");
     if (button) selectCount(Number(button.dataset.count));
   });
+  refs.chapterSelector.addEventListener("click", (event) => {
+    const button = event.target.closest("button[data-chapter-index]");
+    if (button) selectChapter(Number(button.dataset.chapterIndex));
+  });
   refs.startButton.addEventListener("click", startRandomSession);
+  refs.chapterStartButton.addEventListener("click", startChapterSession);
   refs.previousButton.addEventListener("click", goToPreviousQuestion);
   refs.nextButton.addEventListener("click", goToNextQuestion);
   refs.exitQuizButton.addEventListener("click", () => navigateAway(goToSetup));
@@ -579,6 +663,7 @@
   }
 
   selectCount(20);
+  selectSetupMode(setupMode);
   updateWrongCount();
   renderSetup();
   setView("setup");

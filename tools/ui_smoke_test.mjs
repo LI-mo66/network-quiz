@@ -142,6 +142,31 @@ try {
   assert((await evaluate("document.getElementById('total-count').textContent")) === "100", "Wrong bank total");
   await screenshot("desktop-setup.png");
 
+  await evaluate("document.querySelector('[data-mode=\"chapter\"]').click()");
+  assert(
+    (await evaluate("document.querySelectorAll('#chapter-selector button').length")) === 10,
+    "Chapter selector did not render all chapters",
+  );
+  await screenshot("desktop-chapter-setup.png");
+  const selectedChapter = await evaluate(`(() => {
+    document.querySelector('[data-chapter-index="2"]').click();
+    return window.QUESTION_BANK_META.chapters[2];
+  })()`);
+  await evaluate("document.getElementById('chapter-start-button').click()");
+  await waitFor("!document.getElementById('quiz-view').hidden", "Chapter quiz did not open");
+  assert(
+    (await evaluate("document.querySelectorAll('#navigator-grid button').length")) === 10,
+    "Chapter quiz did not contain 10 questions",
+  );
+  for (let index = 0; index < 10; index += 1) {
+    const chapter = await evaluate(`(() => {
+      document.querySelectorAll('#navigator-grid button')[${index}].click();
+      return document.getElementById('question-chapter').textContent;
+    })()`);
+    assert(chapter === selectedChapter, "Chapter quiz mixed questions from another chapter");
+  }
+
+  await reloadAndWait();
   await evaluate("document.querySelector('[data-count=\"20\"]').click(); document.getElementById('start-button').click()");
   await waitFor("!document.getElementById('quiz-view').hidden", "Quiz view did not open");
 
@@ -203,6 +228,11 @@ try {
   const mobileSetupWidth = await evaluate("({scroll: document.documentElement.scrollWidth, viewport: innerWidth})");
   assert(mobileSetupWidth.scroll <= mobileSetupWidth.viewport, "Mobile setup has horizontal overflow");
   await screenshot("mobile-setup.png");
+  await evaluate("document.querySelector('[data-mode=\"chapter\"]').click()");
+  const mobileChapterWidth = await evaluate("({scroll: document.documentElement.scrollWidth, viewport: innerWidth})");
+  assert(mobileChapterWidth.scroll <= mobileChapterWidth.viewport, "Mobile chapter selector has horizontal overflow");
+  await screenshot("mobile-chapter-setup.png");
+  await evaluate("document.querySelector('[data-mode=\"random\"]').click()");
   await evaluate("document.getElementById('start-button').click()");
   await waitFor("!document.getElementById('quiz-view').hidden", "Mobile quiz did not open");
   const mobileQuizWidth = await evaluate("({scroll: document.documentElement.scrollWidth, viewport: innerWidth})");
