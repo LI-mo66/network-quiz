@@ -1,0 +1,198 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="color-scheme" content="light">
+  <title>信息网络化离线题库</title>
+  <link rel="stylesheet" href="styles.css">
+  <script src="questions.js" defer></script>
+  <script src="app.js" defer></script>
+</head>
+<body>
+  <div class="app-shell">
+    <header class="topbar">
+      <button class="brand" id="home-button" type="button" aria-label="返回组卷页">
+        <span class="brand-mark" aria-hidden="true">N</span>
+        <span>
+          <strong>信息网络化题库</strong>
+          <small>离线练习</small>
+        </span>
+      </button>
+      <nav class="top-actions" aria-label="主要操作">
+        <button class="button button-quiet" id="wrong-book-nav" type="button">
+          错题本 <span class="count-badge" id="wrong-book-count">0</span>
+        </button>
+        <button class="button button-primary button-compact" id="new-paper-button" type="button">重新组卷</button>
+      </nav>
+    </header>
+
+    <main class="main-content">
+      <div class="sr-only" id="live-region" aria-live="polite"></div>
+
+      <section class="view setup-view" id="setup-view">
+        <div class="setup-layout">
+          <div class="setup-primary">
+            <p class="eyebrow">随机组卷</p>
+            <h1>选择本次题量</h1>
+            <div class="count-selector" id="count-selector" role="group" aria-label="题量">
+              <button type="button" data-count="20" aria-pressed="true"><strong>20</strong><span>题</span></button>
+              <button type="button" data-count="50" aria-pressed="false"><strong>50</strong><span>题</span></button>
+              <button type="button" data-count="100" aria-pressed="false"><strong>100</strong><span>题</span></button>
+            </div>
+            <button class="button button-primary start-button" id="start-button" type="button">开始 20 题</button>
+          </div>
+
+          <aside class="bank-summary" aria-label="题库概况">
+            <div>
+              <span>题库总量</span>
+              <strong id="total-count">100</strong>
+            </div>
+            <div>
+              <span>单选题</span>
+              <strong id="single-count">50</strong>
+            </div>
+            <div>
+              <span>判断题</span>
+              <strong id="judgment-count">50</strong>
+            </div>
+            <div>
+              <span>题目图片</span>
+              <strong id="image-count">8</strong>
+            </div>
+          </aside>
+        </div>
+
+        <section class="history-section" aria-labelledby="history-title">
+          <div class="section-heading">
+            <div>
+              <p class="eyebrow">本机记录</p>
+              <h2 id="history-title">最近成绩</h2>
+            </div>
+          </div>
+          <div class="history-list" id="history-list"></div>
+        </section>
+      </section>
+
+      <section class="view quiz-view" id="quiz-view" hidden>
+        <div class="quiz-status">
+          <button class="icon-button" id="exit-quiz-button" type="button" aria-label="退出本次练习" title="退出本次练习">←</button>
+          <div class="progress-block">
+            <div class="progress-copy">
+              <strong id="progress-label">1 / 20</strong>
+              <span id="answered-label">已答 0 题</span>
+            </div>
+            <div class="progress-track" aria-hidden="true"><span id="progress-bar"></span></div>
+          </div>
+          <div class="live-score">
+            <span>当前正确</span>
+            <strong id="live-score-value">0</strong>
+          </div>
+        </div>
+
+        <div class="quiz-layout">
+          <aside class="question-navigator" aria-label="答题卡">
+            <div class="navigator-heading">
+              <strong>答题卡</strong>
+              <span id="navigator-summary">0 / 20</span>
+            </div>
+            <div class="navigator-grid" id="navigator-grid"></div>
+            <div class="navigator-legend">
+              <span><i class="legend-dot correct"></i>正确</span>
+              <span><i class="legend-dot wrong"></i>错误</span>
+              <span><i class="legend-dot pending"></i>未答</span>
+            </div>
+          </aside>
+
+          <article class="question-panel" aria-labelledby="question-stem">
+            <div class="question-meta">
+              <span id="question-type">单选题</span>
+              <span id="question-chapter"></span>
+            </div>
+            <h1 id="question-stem"></h1>
+            <div class="question-images" id="question-images"></div>
+            <div class="option-list" id="option-list" role="radiogroup" aria-label="备选答案"></div>
+
+            <section class="answer-feedback" id="answer-feedback" aria-live="polite" hidden>
+              <div class="feedback-heading">
+                <span class="feedback-icon" id="feedback-icon" aria-hidden="true"></span>
+                <div>
+                  <strong id="feedback-title"></strong>
+                  <p id="correct-answer-line"></p>
+                </div>
+              </div>
+              <div class="explanation" id="explanation" hidden>
+                <h2>答案解析</h2>
+                <p id="explanation-text"></p>
+                <div class="explanation-images" id="explanation-images"></div>
+              </div>
+            </section>
+
+            <footer class="question-actions">
+              <button class="button button-secondary" id="previous-button" type="button">上一题</button>
+              <button class="button button-primary" id="next-button" type="button" disabled>下一题</button>
+            </footer>
+          </article>
+        </div>
+      </section>
+
+      <section class="view result-view" id="result-view" hidden>
+        <header class="result-header">
+          <div>
+            <p class="eyebrow">本次成绩</p>
+            <h1 id="result-title">练习完成</h1>
+          </div>
+          <div class="result-score">
+            <strong id="result-percent">0%</strong>
+            <span id="result-fraction">0 / 20</span>
+          </div>
+        </header>
+        <div class="result-metrics">
+          <div><span>正确</span><strong class="metric-correct" id="result-correct">0</strong></div>
+          <div><span>错误</span><strong class="metric-wrong" id="result-wrong">0</strong></div>
+          <div><span>题量</span><strong id="result-total">20</strong></div>
+        </div>
+        <div class="result-actions">
+          <button class="button button-primary" id="retry-wrong-button" type="button">错题重练</button>
+          <button class="button button-secondary" id="result-new-button" type="button">再练一组</button>
+        </div>
+        <section class="review-section" aria-labelledby="review-title">
+          <div class="section-heading">
+            <div>
+              <p class="eyebrow">本次回顾</p>
+              <h2 id="review-title">错题解析</h2>
+            </div>
+            <span class="section-count" id="review-count">0 题</span>
+          </div>
+          <div class="review-list" id="review-list"></div>
+        </section>
+      </section>
+
+      <section class="view book-view" id="book-view" hidden>
+        <header class="book-header">
+          <div>
+            <p class="eyebrow">本机保存</p>
+            <h1>错题本</h1>
+          </div>
+          <div class="book-actions">
+            <button class="button button-primary" id="practice-book-button" type="button">练习全部错题</button>
+            <button class="button button-quiet" id="clear-book-button" type="button">清空</button>
+          </div>
+        </header>
+        <div class="review-list" id="book-list"></div>
+      </section>
+    </main>
+  </div>
+
+  <dialog class="confirm-dialog" id="confirm-dialog">
+    <form method="dialog">
+      <h2 id="confirm-title">退出本次练习？</h2>
+      <p id="confirm-copy">本次未完成的答题进度将不保留。</p>
+      <div class="dialog-actions">
+        <button class="button button-secondary" value="cancel">取消</button>
+        <button class="button button-danger" id="confirm-action" value="confirm">确认退出</button>
+      </div>
+    </form>
+  </dialog>
+</body>
+</html>
